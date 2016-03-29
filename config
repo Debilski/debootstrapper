@@ -1,0 +1,4 @@
+TIMEZONE="Europe/Berlin"
+APT_CACHE="apt.itb.pri:3142/"
+DOMAIN=".itb.pri"
+

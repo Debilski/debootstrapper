@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+source config
+
 echo "Choose partition to install to:"
 read PARTITION
 
@@ -35,7 +37,25 @@ mkdir -p /target/boot/efi
 mount ${PARTITION}1 /target/boot/efi
 mkdir -p /target/extra
 
-debootstrap --arch amd64 jessie /target http://apt-cacher-ng.local.pri:3142/ftp.de.debian.org/debian
+debootstrap --arch amd64 jessie /target http://${APT_CACHE}ftp.de.debian.org/debian
 
+sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
+mkfstab $PARTITION > /target/etc/fstab
 
+CHROOT_MOUNTS=dev dev/pts proc sys sys/firmware
+for m in $CHROOT_MOUNTS ; do
+  mount --bind /$m /target/$m
+done
+
+chroot /target apt-get update
+chroot /target apt-get install lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux dbus
+
+chroot /target grub-install --force-extra-removable --recheck $PARTITION
+chroot /target update-grub
+
+for m in $CHROOT_MOUNTS ; do
+  umount --bind /$m /target/$m
+done
+
+systemd-nspawn -D /target passwd
 
