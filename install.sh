@@ -69,7 +69,7 @@ TIMEZONE=${TIMEZONE}
 EOF
 
 cp init-system.service /target/etc/systemd/system/multi-user.target.wants/
-systemd-nspqwn -D apt-get install -y dbus
+systemd-nspawn -D apt-get install -y dbus
 systemd-nspawn -D /target -b
 rm /target/etc/systemd/system/multi-user.target.wants/init-system.service
 
