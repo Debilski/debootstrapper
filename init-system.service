@@ -1,0 +1,12 @@
+[Unit]
+Before=systemd-sysusers.service
+
+[Service]
+Type=oneshot
+#RemainAfterExit=yes
+EnvironmentFile=/root/default-environment
+ExecStart=/usr/bin/hostnamectl set-hostname $HOSTNAME
+ExecStart=/usr/bin/timedateclt set-timezone $TIMEZONE
+#StandardOutput=tty
+#StandardInput=tty
+#StandardError=tty

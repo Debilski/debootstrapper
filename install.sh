@@ -47,15 +47,24 @@ for m in $CHROOT_MOUNTS ; do
   mount --bind /$m /target/$m
 done
 
+chroot /target passwd
 chroot /target apt-get update
 chroot /target apt-get install lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux dbus
 
 chroot /target grub-install --force-extra-removable --recheck $PARTITION
 chroot /target update-grub
 
-for m in $CHROOT_MOUNTS ; do
-  umount --bind /$m /target/$m
-done
+umount -A --recursive /target/
+mount /dev/vg-main/root /target
+mount ${PARTITION}2 /target/boot
+mount ${PARTITION}1 /target/boot/efi
 
-systemd-nspawn -D /target passwd
+cat > /target/root/default-environment <<EOF
+HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
+TIMEZONE=${TIMEZONE}
+EOF
+
+cp init-system.service /target/etc/systemd/system/multi-user.target.wants/
+systemd-nspawn -D /target -b
+rm /target/etc/systemd/system/multi-user.target.wants/init-system.service
 
