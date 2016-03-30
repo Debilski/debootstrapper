@@ -69,6 +69,8 @@ HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
 TIMEZONE=${TIMEZONE}
 EOF
 
+cp minimal-dhcp-network /target/etc/network/interfaces
+
 cp init-system.service /target/etc/systemd/system/multi-user.target.wants/
 systemd-nspawn -D /target apt-get install -y dbus
 systemd-nspawn -D /target -b
