@@ -54,6 +54,10 @@ chroot /target apt-get install lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 fi
 chroot /target grub-install --force-extra-removable --recheck $PARTITION
 chroot /target update-grub
 
+echo "Now umounting the dev mounts again. But sleeping a bit before that."
+sync
+sleep 3
+
 umount -A --recursive /target/
 mount /dev/vg-main/root /target
 mount ${PARTITION}2 /target/boot
