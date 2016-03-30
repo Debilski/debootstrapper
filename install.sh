@@ -49,7 +49,6 @@ done
 
 chroot /target passwd
 chroot /target debconf-apt-progress -- apt-get update
-chroot /target tasksel --new-install install ssh-server standard
 chroot /target debconf-apt-progress -- apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
 
 chroot /target grub-install --force-extra-removable --recheck $PARTITION
@@ -73,6 +72,7 @@ cp minimal-dhcp-network /target/etc/network/interfaces
 
 cp init-system.service /target/etc/systemd/system/multi-user.target.wants/
 systemd-nspawn -D /target debconf-apt-progress -- apt-get install -y dbus
+systemd-nspawn -D /target tasksel --new-install install ssh-server standard
 systemd-nspawn -D /target -b
 rm /target/etc/systemd/system/multi-user.target.wants/init-system.service
 
