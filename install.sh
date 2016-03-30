@@ -40,7 +40,7 @@ mkdir -p /target/extra
 debootstrap --arch amd64 jessie /target http://${APT_CACHE}ftp.de.debian.org/debian
 
 sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
-mkfstab $PARTITION > /target/etc/fstab
+bash mkfstab.sh $PARTITION > /target/etc/fstab
 
 CHROOT_MOUNTS=dev dev/pts proc sys sys/firmware
 for m in $CHROOT_MOUNTS ; do
