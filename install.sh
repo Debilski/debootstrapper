@@ -49,6 +49,7 @@ done
 
 chroot /target passwd
 chroot /target apt-get update
+chroot /target tasksel --new-install install ssh-server standard
 chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
 
 chroot /target grub-install --force-extra-removable --recheck $PARTITION
