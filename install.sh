@@ -22,7 +22,7 @@ sgdisk -p $PARTITION
 echo "Deleting all data. Press button or quit with CTRL-C"
 read
 
-sgdisk -Z $PARTITION
+sgdisk --clear --zap-all --mbrtogpt $PARTITION
 sgdisk --new=1:0:+512M --typecode=1:EF00 --change-name=1:"EFI Boot" $PARTITION
 sgdisk --new=2:0:+256M --typecode=2:8300 --change-name=2:"Boot" $PARTITION
 sgdisk --new=3:0:0     --typecode=3:8E00 --change-name=3:"LVM" $PARTITION
