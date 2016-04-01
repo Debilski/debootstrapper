@@ -85,10 +85,9 @@ systemd-nspawn -D /target apt-get install -y dbus openssh-server aptitude bash-c
 systemd-nspawn -D /target -b
 rm /target/etc/systemd/system/multi-user.target.wants/init-system.service
 
-wget https://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb
-cp puppetlabs-release-pc1-jessie.deb /target/root/
+wget -O /target/root/puppetlabs-release-pc1-jessie.deb https://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb
 systemd-nspawn -D /target dpkg -i /root/puppetlabs-release-pc1-jessie.deb
 systemd-nspawn -D /target apt-get update
 systemd-nspawn -D /target apt-get -y install lsb-release puppet-agent
-systemd-nspawn -D /target apt-get remove puppetlabs-release
+systemd-nspawn -D /target apt-get remove puppetlabs-release-pc1
 
