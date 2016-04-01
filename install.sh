@@ -52,35 +52,10 @@ mkdir -p /target/extra
 
 debootstrap --arch amd64 jessie /target http://${APT_CACHE}ftp.de.debian.org/debian
 
-sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
-bash mkfstab.sh $PARTITION $HOSTNAME--vg > /target/etc/fstab
-
 cat >/target/etc/default/locale <<EOF
 LANG="en_US.UTF-8"
 LANGUAGE="en_US:en"
 EOF
-
-CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
-for m in $CHROOT_MOUNTS ; do
-  mount --bind /$m /target/$m
-done
-
-chroot /target update-locale
-echo "root:${PASSWD}" | chroot /target chpasswd
-chroot /target apt-get update
-chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
-
-chroot /target grub-install --force-extra-removable --recheck $PARTITION
-chroot /target update-grub
-
-echo "Now umounting the dev mounts again. But sleeping a bit before that."
-sync
-sleep 3
-
-umount -A --recursive /target/
-mount /dev/$VG/root /target
-mount ${PARTITION}2 /target/boot
-mount ${PARTITION}1 /target/boot/efi
 
 cat > /target/root/default-environment <<EOF
 HOSTNAME=${HOSTNAME}
@@ -103,6 +78,29 @@ systemd-nspawn -D /target apt-get install -y dbus openssh-server aptitude bash-c
 systemd-nspawn -D /target bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 systemd-nspawn -D /target -b
 rm $SYSTEMD_START_FILE
+
+sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
+bash mkfstab.sh $PARTITION $HOSTNAME--vg > /target/etc/fstab
+
+CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
+for m in $CHROOT_MOUNTS ; do
+  mount --bind /$m /target/$m
+done
+
+chroot /target update-locale
+echo "root:${PASSWD}" | chroot /target chpasswd
+chroot /target apt-get update
+chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
+
+chroot /target grub-install --force-extra-removable --recheck $PARTITION
+chroot /target update-grub
+
+echo "Now umounting the dev mounts again. But sleeping a bit before that."
+sync
+sleep 3
+
+umount -A --recursive /target/
+mount /dev/$VG/root /target
 
 wget -O /target/root/puppetlabs-release-pc1-jessie.deb https://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb
 systemd-nspawn -D /target dpkg -i /root/puppetlabs-release-pc1-jessie.deb
