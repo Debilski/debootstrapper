@@ -2,6 +2,9 @@
 set -euo pipefail
 
 source config
+
+read -s -p "Please set the password for root: " PASSWD
+
 HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
 
 echo "Assuming hostname is:"
@@ -52,12 +55,18 @@ debootstrap --arch amd64 jessie /target http://${APT_CACHE}ftp.de.debian.org/deb
 sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
 bash mkfstab.sh $PARTITION $HOSTNAME--vg > /target/etc/fstab
 
+cat >/target/etc/default/locale <<EOF
+LANG="en_US.UTF-8"
+LANGUAGE="en_US:en"
+EOF
+
 CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
 for m in $CHROOT_MOUNTS ; do
   mount --bind /$m /target/$m
 done
 
-chroot /target passwd
+chroot /target update-locale
+echo "root:${PASSWD}" | chroot /target chpasswd
 chroot /target apt-get update
 chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
 
