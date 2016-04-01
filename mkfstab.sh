@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PARTITION=$1
+MAPPER=$2
 
 cat <<EOF
 # /etc/fstab: static file system information.
@@ -11,8 +12,8 @@ cat <<EOF
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 UUID=$( blkid -s UUID -o value ${PARTITION}1 ) /boot/efi vfat umask=0077 0 1
 UUID=$( blkid -s UUID -o value ${PARTITION}2 ) /boot ext2 defaults 0 2
-/dev/mapper/vg--main-root / xfs defaults 0 2
-/dev/mapper/vg--main-swap none swap sw 0 0
-/dev/mapper/vg--main-extra /extra xfs defaults 0 1
+/dev/mapper/$MAPPER--vg-root / xfs defaults 0 2
+/dev/mapper/$MAPPER--vg-swap none swap sw 0 0
+/dev/mapper/$MAPPER--vg-extra /extra xfs defaults 0 1
 EOF
 
