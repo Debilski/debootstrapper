@@ -80,10 +80,20 @@ EOF
 
 cp minimal-dhcp-network /target/etc/network/interfaces
 
-cp init-system.service /target/etc/systemd/system/multi-user.target.wants/
+SYSTEMD_START_FILE=/target/etc/systemd/system/multi-user.target.wants/init-system.service
+cat >$SYSTEMD_START_FILE <<EOF
+[Service]
+Type=oneshot
+EnvironmentFile=/root/default-environment
+ExecStart=/usr/bin/hostnamectl set-hostname $HOSTNAME
+ExecStart=/usr/bin/timedatectl set-timezone $TIMEZONE
+ExecStart=/usr/bin/tasksel --new-install install openssh standard
+ExecStart=/bin/systemctl poweroff
+EOF
+
 systemd-nspawn -D /target apt-get install -y dbus openssh-server aptitude bash-completion
 systemd-nspawn -D /target -b
-rm /target/etc/systemd/system/multi-user.target.wants/init-system.service
+rm $SYSTEMD_START_FILE
 
 wget -O /target/root/puppetlabs-release-pc1-jessie.deb https://apt.puppetlabs.com/puppetlabs-release-pc1-jessie.deb
 systemd-nspawn -D /target dpkg -i /root/puppetlabs-release-pc1-jessie.deb
