@@ -52,6 +52,10 @@ mkdir -p /target/extra
 
 debootstrap --arch amd64 jessie /target http://${APT_CACHE}ftp.de.debian.org/debian
 
+cat >>/target/etc/locale.gen <<EOF
+en_US.UTF-8 UTF-8
+EOF
+
 cat >/target/etc/default/locale <<EOF
 LANG="en_US.UTF-8"
 LANGUAGE="en_US:en"
