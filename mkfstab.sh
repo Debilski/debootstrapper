@@ -1,7 +1,12 @@
 #!/bin/bash
+set -euo pipefail
 
 PARTITION=$1
-MAPPER=$2
+VG_NAME=$2
+
+root=$(dmsetup info -C --noheadings -o Name /dev/$VG_NAME/root)
+swap=$(dmsetup info -C --noheadings -o Name /dev/$VG_NAME/swap)
+extra=$(dmsetup info -C --noheadings -o Name /dev/$VG_NAME/extra)
 
 cat <<EOF
 # /etc/fstab: static file system information.
@@ -12,8 +17,8 @@ cat <<EOF
 # <file system> <mount point>   <type>  <options>       <dump>  <pass>
 UUID=$( blkid -s UUID -o value ${PARTITION}1 ) /boot/efi vfat umask=0077 0 1
 UUID=$( blkid -s UUID -o value ${PARTITION}2 ) /boot ext2 defaults 0 2
-/dev/mapper/$MAPPER--vg-root / xfs defaults 0 2
-/dev/mapper/$MAPPER--vg-swap none swap sw 0 0
-/dev/mapper/$MAPPER--vg-extra /extra xfs defaults 0 1
+/dev/mapper/$root / xfs defaults 0 2
+/dev/mapper/$swap none swap sw 0 0
+/dev/mapper/$extra /extra xfs defaults 0 1
 EOF
 

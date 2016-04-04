@@ -84,7 +84,7 @@ systemd-nspawn -D /target -b
 rm $SYSTEMD_START_FILE
 
 sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
-bash mkfstab.sh $PARTITION $HOSTNAME > /target/etc/fstab
+bash mkfstab.sh $PARTITION $VG > /target/etc/fstab
 
 CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
 for m in $CHROOT_MOUNTS ; do
