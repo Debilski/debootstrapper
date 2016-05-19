@@ -16,27 +16,37 @@ echo "Please exit, if this is wrong."
 
 echo ""
 
-echo "Choose partition to install to:"
-read PARTITION
+echo "Choose disk to install to:"
+read DISK
 
-echo "Current partition layout on ${PARTITION} is:"
-sgdisk -p $PARTITION
+echo "Current partition layout on ${DISK} is:"
+sgdisk -p $DISK
 
 echo "Deleting all data. Press button or quit with CTRL-C"
 read
 
-sgdisk --clear --zap-all --mbrtogpt $PARTITION
-sgdisk --new=1:0:+512M --typecode=1:EF00 --change-name=1:"EFI Boot" $PARTITION
-sgdisk --new=2:0:+256M --typecode=2:8300 --change-name=2:"Boot" $PARTITION
-sgdisk --new=3:0:0     --typecode=3:8E00 --change-name=3:"LVM" $PARTITION
+sgdisk --clear --zap-all --mbrtogpt $DISK
+sgdisk --new=1:0:+512M --typecode=1:EF00 --change-name=1:"EFI Boot" $DISK
+sgdisk --new=2:0:+256M --typecode=2:8300 --change-name=2:"Boot" $DISK
+sgdisk --new=3:0:0     --typecode=3:8E00 --change-name=3:"LVM" $DISK
 
-vgcreate $VG ${PARTITION}3
+LVM_PARTITION=$(blkid -L LVM)
+BOOT_PARTITION=$(blkid -L Boot)
+EFI_PARTITION=$(blkid -L "EFI Boot")
+
+echo "Please confirm the automatic selection of partitions:"
+"${EFI_PARTITION} for EFI"
+"${BOOT_PARTITION} for Boot"
+"${LVM_PARTITION} for LVM."
+read
+
+vgcreate $VG ${LVM_PARTITION}
 lvcreate $VG --size +70G --name root
 lvcreate $VG --size +12G --name swap
 lvcreate $VG --extents 100%FREE --name extra
 
-mkfs.vfat -F 32 ${PARTITION}1
-mkfs.ext2 ${PARTITION}2
+mkfs.vfat -F 32 ${EFI_PARTITION}
+mkfs.ext2 ${BOOT_PARTITION}
 
 mkfs.xfs /dev/$VG/root
 mkswap /dev/$VG/swap
@@ -45,9 +55,9 @@ mkfs.xfs /dev/$VG/extra
 mkdir -p /target
 mount /dev/$VG/root /target
 mkdir -p /target/boot
-mount ${PARTITION}2 /target/boot
+mount ${BOOT_PARTITION} /target/boot
 mkdir -p /target/boot/efi
-mount ${PARTITION}1 /target/boot/efi
+mount ${EFI_PARTITION} /target/boot/efi
 mkdir -p /target/extra
 
 debootstrap --arch amd64 jessie /target http://${APT_CACHE}ftp.de.debian.org/debian
@@ -84,7 +94,7 @@ systemd-nspawn -D /target -b
 rm $SYSTEMD_START_FILE
 
 sed -i -e s/main/"main contrib non-free"/g /target/etc/apt/sources.list
-bash mkfstab.sh $PARTITION $VG > /target/etc/fstab
+bash mkfstab.sh $DISK $VG > /target/etc/fstab
 
 CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
 for m in $CHROOT_MOUNTS ; do
@@ -96,7 +106,7 @@ echo "root:${PASSWD}" | chroot /target chpasswd
 chroot /target apt-get update
 chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
 
-chroot /target grub-install --force-extra-removable --recheck $PARTITION
+chroot /target grub-install --force-extra-removable --recheck $DISK
 chroot /target update-grub
 
 echo "Now umounting the dev mounts again. But sleeping a bit before that."
