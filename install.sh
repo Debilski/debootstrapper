@@ -30,6 +30,8 @@ sgdisk --new=1:0:+512M --typecode=1:EF00 --change-name=1:"EFI Boot" $DISK
 sgdisk --new=2:0:+256M --typecode=2:8300 --change-name=2:"Boot" $DISK
 sgdisk --new=3:0:0     --typecode=3:8E00 --change-name=3:"LVM" $DISK
 
+partprobe $DISK
+
 LVM_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 3 $DISK))
 BOOT_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 2 $DISK))
 EFI_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 1 $DISK))
