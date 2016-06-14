@@ -116,7 +116,7 @@ done
 chroot /target update-locale
 echo "root:${PASSWD}" | chroot /target chpasswd
 chroot /target apt-get update
-chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux
+chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux parted gdisk dosfstools git-core debootstrap
 
 chroot /target grub-install --force-extra-removable --recheck $DISK
 chroot /target update-grub
