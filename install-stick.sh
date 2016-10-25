@@ -17,7 +17,7 @@ echo "Please exit, if this is wrong."
 echo ""
 
 echo "Choose disk to install to:"
-read DISK
+read -e DISK
 
 echo "Current partition layout on ${DISK} is:"
 sgdisk -p $DISK
