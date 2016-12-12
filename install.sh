@@ -90,7 +90,7 @@ ExecStart=/usr/bin/timedatectl set-timezone $TIMEZONE
 ExecStart=/bin/systemctl poweroff
 EOF
 
-systemd-nspawn -D /target apt-get install -y dbus openssh-server aptitude bash-completion
+systemd-nspawn -D /target apt-get install -y dbus openssh-server aptitude bash-completion apt-transport-https
 systemd-nspawn -D /target bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 systemd-nspawn -D /target -b
 rm $SYSTEMD_START_FILE
