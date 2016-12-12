@@ -3,12 +3,15 @@ set -euo pipefail
 
 source config
 
+function echo_blue() { echo -e "\e[34m$@\033[0m"; }
+function echo_green() { echo -e "\e[32m$@\033[0m"; }
+
 read -s -p "Please set the password for root: " PASSWD
 
 HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
 
 echo "Assuming hostname is:"
-echo $HOSTNAME
+echo_green $HOSTNAME
 
 VG=$HOSTNAME-vg
 echo "This means, we’ll create a volume group with the name ‘$VG’."
@@ -16,13 +19,13 @@ echo "Please exit, if this is wrong."
 
 echo ""
 
-echo "Choose disk to install to:"
+echo_blue "Choose disk to install to:"
 read -e DISK
 
 echo "Current partition layout on ${DISK} is:"
 sgdisk -p $DISK
 
-echo "Deleting all data. Press button or quit with CTRL-C"
+echo_blue "Deleting all data. Press button or quit with CTRL-C"
 read
 
 sgdisk --clear --zap-all --mbrtogpt $DISK
@@ -36,10 +39,10 @@ LVM_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 3 $DISK))
 BOOT_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 2 $DISK))
 EFI_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 1 $DISK))
 
-echo "Please confirm the automatic selection of partitions:"
-echo "${EFI_PARTITION} for EFI"
-echo "${BOOT_PARTITION} for Boot"
-echo "${LVM_PARTITION} for LVM."
+echo_blue "Please confirm the automatic selection of partitions:"
+echo_green "${EFI_PARTITION} for EFI"
+echo_green "${BOOT_PARTITION} for Boot"
+echo_green "${LVM_PARTITION} for LVM."
 read
 
 vgcreate $VG ${LVM_PARTITION}
@@ -111,7 +114,7 @@ chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64
 chroot /target grub-install --force-extra-removable --recheck $DISK
 chroot /target update-grub
 
-echo "Now umounting the dev mounts again. But sleeping a bit before that."
+echo_green "Now umounting the dev mounts again. But sleeping a bit before that."
 sync
 sleep 3
 
