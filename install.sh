@@ -125,5 +125,5 @@ wget -O /target/root/puppetlabs-release-pc1-jessie.deb https://apt.puppetlabs.co
 systemd-nspawn -D /target dpkg -i /root/puppetlabs-release-pc1-jessie.deb
 systemd-nspawn -D /target apt-get update
 systemd-nspawn -D /target apt-get -y install lsb-release puppet-agent
-systemd-nspawn -D /target apt-get remove puppetlabs-release-pc1
+systemd-nspawn -D /target apt-get -y remove puppetlabs-release-pc1
 
