@@ -3,26 +3,31 @@ set -euo pipefail
 
 source config
 
+TARGET=${TARGET:-/target}
+
+function echo_blue() { echo -e "\e[34m$*\033[0m"; }
+function echo_green() { echo -e "\e[32m$*\033[0m"; }
+
 read -s -p "Please set the password for root: " PASSWD
 
-HOSTNAME=debian-boot # $(basename $(hostname -A) ${DOMAIN})
+HOSTNAME=debian-boot
 
 echo "Assuming hostname is:"
-echo $HOSTNAME
+echo_green $HOSTNAME
 
-VG=debian-boot-vg
+VG="$HOSTNAME-vg"
 echo "This means, we’ll create a volume group with the name ‘$VG’."
 echo "Please exit, if this is wrong."
 
 echo ""
 
-echo "Choose disk to install to:"
+echo_blue "Choose disk to install to:"
 read -e DISK
 
 echo "Current partition layout on ${DISK} is:"
-sgdisk -p $DISK
+sgdisk -p "$DISK"
 
-echo "Deleting all data. Press button or quit with CTRL-C"
+echo_blue "Deleting all data. Press button or quit with CTRL-C"
 read
 
 sgdisk --clear --zap-all --mbrtogpt $DISK
@@ -36,10 +41,10 @@ LVM_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 3 $DISK))
 BOOT_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 2 $DISK))
 EFI_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 1 $DISK))
 
-echo "Please confirm the automatic selection of partitions:"
-echo "${EFI_PARTITION} for EFI"
-echo "${BOOT_PARTITION} for Boot"
-echo "${LVM_PARTITION} for LVM."
+echo_blue "Please confirm the automatic selection of partitions:"
+echo_green "${EFI_PARTITION} for EFI"
+echo_green "${BOOT_PARTITION} for Boot"
+echo_green "${LVM_PARTITION} for LVM."
 read
 
 vgcreate $VG ${LVM_PARTITION}
@@ -55,7 +60,7 @@ mkfs.xfs /dev/$VG/extra
 echo "Installing to tmpfs."
 mkdir -p /target-tmpfs
 mount -t tmpfs -o size=500M none /target-tmpfs
-debootstrap --arch amd64 jessie /target-tmpfs http://${APT_CACHE}ftp.de.debian.org/debian
+debootstrap --arch amd64 stretch /target-tmpfs http://${APT_CACHE}ftp.de.debian.org/debian
 
 mkdir -p /target
 mount /dev/$VG/root /target
@@ -84,7 +89,8 @@ HOSTNAME=${HOSTNAME}
 TIMEZONE=${TIMEZONE}
 EOF
 
-cp minimal-dhcp-network /target/etc/network/interfaces
+cp wired.network /target/etc/systemd/network
+rm /target/etc/resolv.conf
 
 SYSTEMD_START_FILE=/target/etc/systemd/system/multi-user.target.wants/init-system.service
 cat >$SYSTEMD_START_FILE <<EOF
@@ -93,6 +99,9 @@ Type=oneshot
 EnvironmentFile=/root/default-environment
 ExecStart=/usr/bin/hostnamectl set-hostname $HOSTNAME
 ExecStart=/usr/bin/timedatectl set-timezone $TIMEZONE
+ExecStart=/bin/systemctl enable systemd-networkd
+ExecStart=/bin/systemctl enable systemd-networkd
+ExecStart=/bin/systemctl disable networking
 ExecStart=/bin/systemctl poweroff
 EOF
 
@@ -100,7 +109,10 @@ EOF
 mount -t tmpfs -o size=500M none /target/var/cache
 mount -t tmpfs -o size=500M none /target/var/tmp
 
-systemd-nspawn -D /target apt-get install -y dbus openssh-server aptitude bash-completion locales
+echo "root:${PASSWD}" | chroot /target chpasswd
+
+systemd-nspawn -D /target apt-get install -y dbus aptitude bash-completion locales
+systemd-nspawn -D /target apt-get purge -y ifupdown
 # systemd-nspawn -D /target bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 systemd-nspawn -D /target -b
 rm $SYSTEMD_START_FILE
@@ -114,11 +126,10 @@ for m in $CHROOT_MOUNTS ; do
 done
 
 chroot /target update-locale
-echo "root:${PASSWD}" | chroot /target chpasswd
 chroot /target apt-get update
-chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux parted gdisk dosfstools git-core debootstrap
+chroot /target apt-get install -y lvm2 xfsprogs linux-image-amd64 grub-efi-amd64 firmware-linux parted gdisk dosfstools git-core debootstrap openssh-server
 
-chroot /target grub-install --force-extra-removable --recheck $DISK
+chroot /target grub-install --force-extra-removable --recheck --target x86_64-efi $DISK
 chroot /target update-grub
 
 echo "Now umounting the dev mounts again. But sleeping a bit before that."
@@ -126,4 +137,3 @@ sync
 sleep 3
 
 umount -A --recursive /target/
-
