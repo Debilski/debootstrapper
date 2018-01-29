@@ -11,11 +11,11 @@ T_EXTRA="$TARGET/extra"
 function echo_blue() { echo -e "\e[34m$*\033[0m"; }
 function echo_green() { echo -e "\e[32m$*\033[0m"; }
 
-function enter_to_continue() { read -p "Press Enter to continue … " }
+function enter_to_continue() { read -p "Press Enter to continue … "; }
 
 read -r -s -p "Please set the password for root: " PASSWD
 
-HOSTNAME=$(basename "$(hostname -A)" "${DOMAIN}")
+HOSTNAME=$(basename $(hostname -f) ${DOMAIN})
 
 echo "Assuming hostname is:"
 echo_green "$HOSTNAME"
@@ -30,7 +30,7 @@ echo_blue "Choose disk to install to:"
 read -r -e DISK
 
 echo "Current partition layout on ${DISK} is:"
-sgdisk -r -p "$DISK"
+sgdisk -p "$DISK"
 
 echo_blue "Deleting all data. Press button or quit with CTRL-C"
 enter_to_continue
