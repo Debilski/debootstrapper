@@ -29,6 +29,11 @@ echo "Please exit, if this is wrong."
 
 echo ""
 
+if vgs "$VG"
+   echo_blue "Volume group $VG already exists. Aborting."
+   exit -1
+fi
+
 echo_blue "Choose disk to install to:"
 read -r -e DISK
 
@@ -55,6 +60,7 @@ echo_green "${EFI_PARTITION} for EFI"
 echo_green "${BOOT_PARTITION} for Boot"
 echo_green "${LVM_PARTITION} for LVM."
 enter_to_continue
+
 
 vgcreate "$VG" "${LVM_PARTITION}"
 lvcreate "$VG" --size +70G --name root
