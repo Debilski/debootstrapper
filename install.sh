@@ -29,9 +29,9 @@ echo "Please exit, if this is wrong."
 
 echo ""
 
-if vgs "$VG"
+if vgs "$VG" ; then
    echo_blue "Volume group $VG already exists. Aborting."
-   exit -1
+   exit 1
 fi
 
 echo_blue "Choose disk to install to:"
