@@ -17,11 +17,11 @@ cat <<EOF
 # device; this may be used with UUID= as a more robust way to name devices
 # that works even if disks are added and removed. See fstab(5).
 #
-# <file system> <mount point>   <type>  <options>       <dump>  <pass>
-UUID=$( blkid -s UUID -o value "${EFI_PARTITION}" ) /boot/efi vfat umask=0077 0 1
-UUID=$( blkid -s UUID -o value "${BOOT_PARTITION}" ) /boot ext2 defaults 0 2
-"/dev/mapper/$root" / xfs defaults 0 2
-"/dev/mapper/$swap" none swap sw 0 0
-"/dev/mapper/$extra" /extra xfs defaults 0 1
+# <file system> <mount point>   <type>  <options>       <dump> <pass>
+UUID=$( blkid -s UUID -o value "${EFI_PARTITION}" )	/boot/efi	vfat	umask=0077	0	1
+UUID=$( blkid -s UUID -o value "${BOOT_PARTITION}" )	/boot	ext2	defaults	0	2
+/dev/mapper/$root	/	xfs	defaults	0	2
+/dev/mapper/$swap	none	swap	sw	0	0
+/dev/mapper/$extra	/extra	xfs	defaults	0	1
 EOF
 
