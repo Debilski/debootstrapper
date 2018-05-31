@@ -80,7 +80,7 @@ echo_blue "Restarting ssh. Please log in with new shell."
 systemctl restart sshd
 systemctl status sshd
 
-cat >> "$TAKEOVER/root/.bashrc <<EOL
+cat >> "$TAKEOVER/root/.bashrc" <<EOL
 
 echo "The following processes are still active on /oldroot:"
 echo "$ fuser -vm /oldroot"
