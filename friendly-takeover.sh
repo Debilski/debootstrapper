@@ -64,7 +64,7 @@ if ! [ -z "$a" ] ; then
     echo "$a" >> "$TAKEOVER/root/.ssh/authorized_keys"
 else
     echo_blue "No key pasted. Allowing root login."
-    sed -i '/PermitRootLogin/d' "$TAKEOVER/etc/sshd/sshd_config"
+    sed -i '/PermitRootLogin/d' "$TAKEOVER/etc/ssh/sshd_config"
     echo -e "\nPermitRootLogin yes\n" >> "$TAKEOVER/etc/ssh/sshd_config"
     chroot "$TAKEOVER" passwd
 fi
