@@ -110,10 +110,20 @@ ExecStart=/usr/bin/timedatectl set-timezone $TIMEZONE
 ExecStart=/bin/systemctl poweroff
 EOF
 
+SYSTEMD_NETWORKD_FILE="$TARGET/etc/systemd/network/ethernet.network"
+cat >"$SYSTEMD_NETWORKD_FILE" <<EOF
+[Match]
+Name=en*
+
+[Network]
+DHCP=yes
+EOF
+
 systemd-nspawn -D "$TARGET" apt-get install -y dbus openssh-server aptitude bash-completion apt-transport-https
 systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 systemd-nspawn -D "$TARGET" -b
 rm "$SYSTEMD_START_FILE"
+systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
 
 sed -i -e s/main/"main contrib non-free"/g "$TARGET/etc/apt/sources.list"
 bash mkfstab.sh "$DISK" "$VG" > "$TARGET/etc/fstab"
