@@ -70,9 +70,9 @@ lvcreate "$VG" --extents 100%FREE --name extra
 mkfs.vfat -F 32 "${EFI_PARTITION}"
 mkfs.ext2 "${BOOT_PARTITION}"
 
-mkfs.xfs "/dev/$VG/root"
+mkfs.xfs -n ftype=1 "/dev/$VG/root" # ftype=1 should be the default nowadays
 mkswap "/dev/$VG/swap"
-mkfs.xfs "/dev/$VG/extra"
+mkfs.xfs -n ftype=1 "/dev/$VG/extra"
 
 mkdir -p /target
 mount "/dev/$VG/root" "$TARGET"
