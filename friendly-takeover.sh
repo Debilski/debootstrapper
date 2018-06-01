@@ -68,18 +68,6 @@ else
     chroot "$TAKEOVER" passwd
 fi
 
-echo_blue "Pivoting root"
-enter_to_continue
-
-mount --make-rprivate / # necessary for pivot_root to work
-mkdir "$OLDROOT"
-pivot_root "$TAKEOVER" "$OLDROOT"
-for i in dev proc sys run; do mount --move /oldroot/$i /$i; done
-
-echo_blue "Restarting ssh. Please log in with new shell."
-systemctl restart sshd
-systemctl status sshd
-
 cat >> "$TAKEOVER/root/.bashrc" <<EOL
 
 echo "The following processes are still active on /oldroot:"
@@ -92,6 +80,19 @@ echo "fuser -ki -TERM -m /oldroot"
 echo "To reclaim PID1 run:"
 echo "systemctl daemon-reexec"
 EOL
+
+
+echo_blue "Pivoting root"
+enter_to_continue
+
+mount --make-rprivate / # necessary for pivot_root to work
+mkdir "$OLDROOT"
+pivot_root "$TAKEOVER" "$OLDROOT"
+for i in dev proc sys run; do mount --move /oldroot/$i /$i; done
+
+echo_blue "Restarting ssh. Please log in with new shell."
+systemctl restart sshd
+systemctl status sshd
 
 enter_to_continue
 
