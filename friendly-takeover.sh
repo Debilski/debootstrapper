@@ -92,6 +92,7 @@ pivot_root "$TAKEOVER" "$OLDROOT"
 for i in dev proc sys run; do mount --move /oldroot/$i /$i; done
 
 echo_blue "Restarting ssh. Please log in with new shell."
+systemctl daemon-reload
 systemctl restart sshd
 systemctl status sshd
 

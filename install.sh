@@ -3,6 +3,7 @@ set -euo pipefail
 
 source config
 
+
 TARGET=${TARGET:-/target}
 T_BOOT="$TARGET/boot"
 T_EFI="$TARGET/boot/efi"
@@ -15,6 +16,17 @@ function echo_blue() { echo -e "\e[34m$*\033[0m"; }
 function echo_green() { echo -e "\e[32m$*\033[0m"; }
 
 function enter_to_continue() { read -p "Press Enter to continue … "; }
+
+# check for: debootstrap
+# dosfstools
+# xfstools
+# lvm
+# systemd-container
+which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn > /dev/null || {
+  echo_green "Some tools are missing. Installing …"
+  apt-get -y install debootstrap dosfstools xfstools lvm2 systemd-container
+}
+
 
 read -r -s -p "Please set the password for root: " PASSWD
 
@@ -121,6 +133,7 @@ EOF
 
 systemd-nspawn -D "$TARGET" apt-get install -y dbus openssh-server aptitude bash-completion apt-transport-https
 systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-packages standard)'
+#systemd-nspawn -D "$TARGET" aptitude install -y '~pstandard' '~prequired' '~pimportant' # tasksel standard
 systemd-nspawn -D "$TARGET" -b
 rm "$SYSTEMD_START_FILE"
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
@@ -136,7 +149,7 @@ done
 chroot "$TARGET" update-locale
 echo "root:${PASSWD}" | chroot /target chpasswd
 chroot "$TARGET" apt-get update
-chroot "$TARGET" apt-get install -y lvm2 xfsprogs linux-image-amd64 $GRUB firmware-linux
+chroot "$TARGET" apt-get install -y lvm2 xfsprogs linux-image-amd64 $GRUB firmware-linux firmware-linux-nonfree firmware-realtek
 
 chroot "$TARGET" grub-install --force-extra-removable --recheck "$DISK"
 chroot "$TARGET" update-grub
