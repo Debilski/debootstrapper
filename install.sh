@@ -133,6 +133,8 @@ Name=en*
 DHCP=yes
 EOF
 
+systemctl restart dbus
+
 systemd-nspawn -D "$TARGET" apt-get install -y dbus openssh-server aptitude bash-completion apt-transport-https
 systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 #systemd-nspawn -D "$TARGET" aptitude install -y '~pstandard' '~prequired' '~pimportant' # tasksel standard
