@@ -19,12 +19,12 @@ function enter_to_continue() { read -p "Press Enter to continue … "; }
 
 # check for: debootstrap
 # dosfstools
-# xfstools
+# xfsprogs
 # lvm
 # systemd-container
 which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn > /dev/null || {
   echo_green "Some tools are missing. Installing …"
-  apt-get -y install debootstrap dosfstools xfstools lvm2 systemd-container
+  apt-get -y install debootstrap dosfstools xfsprogs lvm2 systemd-container
 }
 
 
