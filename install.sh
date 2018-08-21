@@ -22,9 +22,11 @@ function enter_to_continue() { read -p "Press Enter to continue … "; }
 # xfsprogs
 # lvm
 # systemd-container
-which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn > /dev/null || {
+# partprobe
+# sgdisk
+which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn partprobe sgdisk > /dev/null || {
   echo_green "Some tools are missing. Installing …"
-  apt-get -y install debootstrap dosfstools xfsprogs lvm2 systemd-container
+  apt-get -y install debootstrap dosfstools xfsprogs lvm2 systemd-container gdisk parted
 }
 
 
