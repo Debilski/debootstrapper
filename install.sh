@@ -165,9 +165,9 @@ sleep 3
 umount -A --recursive "$TARGET"
 mount "/dev/$VG/root" "$TARGET"
 
-wget -O "$TARGET/root/puppet5-release-$DEBIAN_CODENAME.deb" https://apt.puppetlabs.com/puppet5-release-$DEBIAN_CODENAME.deb
-systemd-nspawn -D "$TARGET" dpkg -i /root/puppet5-release-$DEBIAN_CODENAME.deb
+wget -O "$TARGET/root/puppet6-release-$DEBIAN_CODENAME.deb" https://apt.puppetlabs.com/puppet6-release-$DEBIAN_CODENAME.deb
+systemd-nspawn -D "$TARGET" dpkg -i /root/puppet6-release-$DEBIAN_CODENAME.deb
 systemd-nspawn -D "$TARGET" apt-get update
 systemd-nspawn -D "$TARGET" apt-get -y install lsb-release puppet-agent
-systemd-nspawn -D "$TARGET" apt-get -y remove puppet5-release
+systemd-nspawn -D "$TARGET" apt-get -y remove puppet6-release
 
