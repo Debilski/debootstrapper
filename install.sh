@@ -10,6 +10,7 @@ T_EFI="$TARGET/boot/efi"
 T_EXTRA="$TARGET/extra"
 
 DEBIAN_CODENAME=stretch
+DEBIAN_BACKPORTS=""
 GRUB=grub-efi-amd64 # grub-pc
 
 function echo_blue() { echo -e "\e[34m$*\033[0m"; }
@@ -42,6 +43,13 @@ echo "This means, we’ll create a volume group with the name ‘$VG’."
 echo "Please exit, if this is wrong."
 
 echo ""
+
+read -p "Should I install a kernel from ${DEBIAN_CODENAME} backports? [y/n]" -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    DEBIAN_BACKPORTS=true
+fi
 
 if vgs "$VG" ; then
    echo_blue "Volume group $VG already exists. Aborting."
@@ -143,6 +151,9 @@ rm "$SYSTEMD_START_FILE"
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
 
 sed -i -e s/main/"main contrib non-free"/g "$TARGET/etc/apt/sources.list"
+if "$DEBIAN_BACKPORTS" ; then
+  echo "deb http://${APT_CACHE}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib non-free" >> "$TARGET/etc/apt/sources.list"
+fi
 bash mkfstab.sh "$DISK" "$VG" > "$TARGET/etc/fstab"
 
 CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
@@ -153,7 +164,12 @@ done
 chroot "$TARGET" update-locale
 echo "root:${PASSWD}" | chroot /target chpasswd
 chroot "$TARGET" apt-get update
-chroot "$TARGET" apt-get install -y lvm2 xfsprogs linux-image-amd64 $GRUB firmware-linux firmware-linux-nonfree firmware-realtek
+chroot "$TARGET" apt-get install -y lvm2 xfsprogs $GRUB
+if "$DEBIAN_BACKPORTS" ; then
+  chroot "$TARGET" apt-get install -y -t ${DEBIAN_CODENAME}-backports linux-image-amd64 firmware-linux firmware-linux-nonfree firmware-realtek
+else
+  chroot "$TARGET" apt-get install -y linux-image-amd64 firmware-linux firmware-linux-nonfree firmware-realtek
+fi
 
 chroot "$TARGET" grub-install --force-extra-removable --recheck "$DISK"
 chroot "$TARGET" update-grub
