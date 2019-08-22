@@ -183,7 +183,7 @@ mount "/dev/$VG/root" "$TARGET"
 
 
 systemd-nspawn -D "$TARGET" apt-get -y install tzdata
-systemd-nspawn -D "$TARGET" /usr/bin/dpkg-reconfigure --frontend noninteractive tzdata
+systemd-nspawn -D "$TARGET" /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
 
 wget -O "$TARGET/root/puppet6-release-$DEBIAN_CODENAME.deb" https://apt.puppetlabs.com/puppet6-release-$DEBIAN_CODENAME.deb
 systemd-nspawn -D "$TARGET" dpkg -i /root/puppet6-release-$DEBIAN_CODENAME.deb
