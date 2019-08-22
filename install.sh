@@ -200,3 +200,5 @@ environment=beta
 EOF
 
 
+echo_green "˜˜˜ Installation finished. You can now reboot. ˜˜˜"
+
