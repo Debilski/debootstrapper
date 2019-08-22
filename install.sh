@@ -181,13 +181,22 @@ sleep 3
 umount -A --recursive "$TARGET"
 mount "/dev/$VG/root" "$TARGET"
 
-
+echo_green "Setting timezone."
 systemd-nspawn -D "$TARGET" apt-get -y install tzdata
-systemd-nspawn -D "$TARGET" /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+systemd-nspawn -D "$TARGET" dpkg-reconfigure --frontend noninteractive tzdata
 
+echo_green "Installing Puppet."
 wget -O "$TARGET/root/puppet6-release-$DEBIAN_CODENAME.deb" https://apt.puppetlabs.com/puppet6-release-$DEBIAN_CODENAME.deb
 systemd-nspawn -D "$TARGET" dpkg -i /root/puppet6-release-$DEBIAN_CODENAME.deb
 systemd-nspawn -D "$TARGET" apt-get update
 systemd-nspawn -D "$TARGET" apt-get -y install lsb-release puppet-agent
 systemd-nspawn -D "$TARGET" apt-get -y remove puppet6-release
+
+
+echo_green "Activating beta environment in Puppet."
+cat >>"$TARGET/etc/puppetlabs/puppet/puppet.conf" <<EOF
+[main]
+environment=beta
+EOF
+
 
