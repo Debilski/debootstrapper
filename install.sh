@@ -163,7 +163,7 @@ bash mkfstab.sh "$DISK" "$VG" > "$TARGET/etc/fstab"
 
 CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
 for m in $CHROOT_MOUNTS ; do
-  mount --bind "/$m" "/target/$m"
+  mount --bind "/$m" "$TARGET/$m"
 done
 
 chroot "$TARGET" update-locale
@@ -176,6 +176,8 @@ else
 fi
 
 chroot "$TARGET" grub-install --force-extra-removable --recheck "$DISK"
+# We may need a bind mount for /run to work around a bug in update-grub
+mount --bind /run "$TARGET/run"
 chroot "$TARGET" update-grub
 
 echo_green "Now umounting the dev mounts again. But sleeping a bit before that."
