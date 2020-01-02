@@ -119,8 +119,6 @@ HOSTNAME=${HOSTNAME}
 TIMEZONE=${TIMEZONE}
 EOF
 
-cp minimal-dhcp-network /target/etc/network/interfaces
-
 SYSTEMD_START_FILE="$TARGET/etc/systemd/system/multi-user.target.wants/init-system.service"
 cat >"$SYSTEMD_START_FILE" <<EOF
 [Service]
