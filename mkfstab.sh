@@ -4,8 +4,8 @@ set -euo pipefail
 DISK=$1
 VG_NAME=$2
 
-BOOT_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 3 "$DISK"))
-EFI_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 2 "$DISK"))
+BOOT_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 2 "$DISK"))
+EFI_PARTITION=$(findfs PARTUUID=$(partx -o UUID -g -r --nr 1 "$DISK"))
 
 root=$(dmsetup info -C --noheadings -o Name "/dev/$VG_NAME/root")
 swap=$(dmsetup info -C --noheadings -o Name "/dev/$VG_NAME/swap")

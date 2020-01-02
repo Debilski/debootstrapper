@@ -9,7 +9,7 @@ T_BOOT="$TARGET/boot"
 T_EFI="$TARGET/boot/efi"
 T_EXTRA="$TARGET/extra"
 
-DEBIAN_CODENAME=stretch
+DEBIAN_CODENAME=buster
 DEBIAN_BACKPORTS=""
 GRUB=grub-efi-amd64 # grub-pc
 
@@ -66,16 +66,15 @@ echo_blue "Deleting all data. Press button or quit with CTRL-C"
 enter_to_continue
 
 sgdisk --clear --zap-all --mbrtogpt "$DISK"
-sgdisk --new=1:2048:4095 --typecode=1:EF02 --change-name=1:"BIOS Boot Partition" "$DISK"
-sgdisk --new=2:0:+512M   --typecode=2:EF00 --change-name=2:"EFI System Partition" "$DISK"
-sgdisk --new=3:0:+1G     --typecode=3:8300 --change-name=3:"Linux /boot" "$DISK"
-sgdisk --new=4:0:0       --typecode=4:8E00 --change-name=4:"Linux LVM" "$DISK"
+sgdisk --new=1:0:+512M   --typecode=1:EF00 --change-name=1:"EFI System Partition" "$DISK"
+sgdisk --new=2:0:+1G     --typecode=2:8300 --change-name=2:"Linux /boot" "$DISK"
+sgdisk --new=3:0:0       --typecode=3:8E00 --change-name=3:"Linux LVM" "$DISK"
 
 partprobe "$DISK"
 
-LVM_PARTITION=$(findfs PARTUUID="$(partx --output UUID --noheadings --raw --nr 4 "$DISK")")
-BOOT_PARTITION=$(findfs PARTUUID="$(partx --output UUID --noheadings --raw --nr 3 "$DISK")")
-EFI_PARTITION=$(findfs PARTUUID="$(partx --output UUID --noheadings --raw --nr 2 "$DISK")")
+LVM_PARTITION=$(findfs PARTUUID="$(partx --output UUID --noheadings --raw --nr 3 "$DISK")")
+BOOT_PARTITION=$(findfs PARTUUID="$(partx --output UUID --noheadings --raw --nr 2 "$DISK")")
+EFI_PARTITION=$(findfs PARTUUID="$(partx --output UUID --noheadings --raw --nr 1 "$DISK")")
 
 echo_blue "Please confirm the automatic selection of partitions:"
 echo_green "${EFI_PARTITION} for EFI"
