@@ -119,14 +119,20 @@ HOSTNAME=${HOSTNAME}
 TIMEZONE=${TIMEZONE}
 EOF
 
-SYSTEMD_START_FILE="$TARGET/etc/systemd/system/multi-user.target.wants/init-system.service"
+SYSTEMD_START_FILE="$TARGET/root/init-system.service"
 cat >"$SYSTEMD_START_FILE" <<EOF
+[Unit]
+Description=Set up hostname and timezone and shut down
+
 [Service]
 Type=oneshot
 EnvironmentFile=/root/default-environment
 ExecStart=/usr/bin/hostnamectl set-hostname $HOSTNAME
 ExecStart=/usr/bin/timedatectl set-timezone $TIMEZONE
-ExecStart=/bin/systemctl poweroff
+ExecStart=/usr/bin/systemctl poweroff
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 SYSTEMD_NETWORKD_FILE="$TARGET/etc/systemd/network/ethernet.network"
@@ -143,6 +149,7 @@ systemctl restart dbus
 systemd-nspawn -D "$TARGET" apt-get install -y dbus openssh-server aptitude bash-completion apt-transport-https
 systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 #systemd-nspawn -D "$TARGET" aptitude install -y '~pstandard' '~prequired' '~pimportant' # tasksel standard
+systemd-nspawn -D "$TARGET" systemctl enable /root/init-system.service
 systemd-nspawn -D "$TARGET" -b
 rm "$SYSTEMD_START_FILE"
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
