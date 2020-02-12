@@ -139,7 +139,7 @@ EOF
 SYSTEMD_NETWORKD_FILE="$TARGET/etc/systemd/network/ethernet.network"
 cat >"$SYSTEMD_NETWORKD_FILE" <<EOF
 [Match]
-Name=en*
+Name=e*
 
 [Network]
 DHCP=yes
