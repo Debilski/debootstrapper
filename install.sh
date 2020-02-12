@@ -202,7 +202,7 @@ systemd-nspawn -D "$TARGET" apt-get -y remove puppet6-release
 echo_green "Activating beta environment in Puppet."
 cat >>"$TARGET/etc/puppetlabs/puppet/puppet.conf" <<EOF
 [main]
-environment=beta
+environment=production
 EOF
 
 
