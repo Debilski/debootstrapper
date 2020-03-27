@@ -199,12 +199,14 @@ systemd-nspawn -D "$TARGET" apt-get -y install lsb-release puppet-agent
 systemd-nspawn -D "$TARGET" apt-get -y remove puppet6-release
 
 
-echo_green "Activating beta environment in Puppet."
+echo_green "Activating production environment in Puppet."
 cat >>"$TARGET/etc/puppetlabs/puppet/puppet.conf" <<EOF
 [main]
 environment=production
 EOF
 
+echo_green "Adding puppet to /etc/hosts"
+echo "172.30.0.21   puppet puppet.itb.pri" >> "$TARGET/etc/hosts"
 
 echo_green "˜˜˜ Installation finished. You can now reboot. ˜˜˜"
 
