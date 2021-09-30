@@ -9,7 +9,7 @@ T_BOOT="$TARGET/boot"
 T_EFI="$TARGET/boot/efi"
 T_EXTRA="$TARGET/extra"
 
-DEBIAN_CODENAME=buster
+DEBIAN_CODENAME=bullseye
 DEBIAN_BACKPORTS=""
 GRUB=grub-efi-amd64 # grub-pc
 
