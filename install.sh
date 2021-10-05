@@ -104,7 +104,8 @@ mount "${EFI_PARTITION}" "$T_EFI"
 mkdir -p /target/extra
 
 debootstrap --arch amd64 $DEBIAN_CODENAME "$TARGET" "http://${APT_CACHE}ftp.de.debian.org/debian"
-echo "root:${PASSWD}" | chroot /target chpasswd
+chroot "$TARGET" apt purge -y rsyslog
+echo "root:${PASSWD}" | chroot "$TARGET" chpasswd
 
 cat >>"$TARGET/etc/locale.gen" <<EOF
 en_US.UTF-8 UTF-8
