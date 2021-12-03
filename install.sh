@@ -197,6 +197,7 @@ wget -O "$TARGET/root/puppet-release-$DEBIAN_CODENAME.deb" https://apt.puppetlab
 systemd-nspawn -D "$TARGET" dpkg -i /root/puppet-release-$DEBIAN_CODENAME.deb
 systemd-nspawn -D "$TARGET" apt-get update
 systemd-nspawn -D "$TARGET" apt-get -y install lsb-release puppet-agent
+systemd-nspawn -D "$TARGET" systemctl enable puppet-agent
 systemd-nspawn -D "$TARGET" apt-get -y remove puppet-release
 
 
