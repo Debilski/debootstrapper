@@ -193,11 +193,11 @@ systemd-nspawn -D "$TARGET" apt-get -y install tzdata
 systemd-nspawn -D "$TARGET" dpkg-reconfigure --frontend noninteractive tzdata
 
 echo_green "Installing Puppet."
-wget -O "$TARGET/root/puppet6-release-$DEBIAN_CODENAME.deb" https://apt.puppetlabs.com/puppet6-release-$DEBIAN_CODENAME.deb
-systemd-nspawn -D "$TARGET" dpkg -i /root/puppet6-release-$DEBIAN_CODENAME.deb
+wget -O "$TARGET/root/puppet-release-$DEBIAN_CODENAME.deb" https://apt.puppetlabs.com/puppet-release-$DEBIAN_CODENAME.deb
+systemd-nspawn -D "$TARGET" dpkg -i /root/puppet-release-$DEBIAN_CODENAME.deb
 systemd-nspawn -D "$TARGET" apt-get update
 systemd-nspawn -D "$TARGET" apt-get -y install lsb-release puppet-agent
-systemd-nspawn -D "$TARGET" apt-get -y remove puppet6-release
+systemd-nspawn -D "$TARGET" apt-get -y remove puppet-release
 
 
 echo_green "Activating production environment in Puppet."
