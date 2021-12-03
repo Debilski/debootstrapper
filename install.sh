@@ -84,7 +84,7 @@ enter_to_continue
 
 
 vgcreate "$VG" "${LVM_PARTITION}"
-lvcreate "$VG" --size +80G --name root
+lvcreate "$VG" --size +90G --name root
 lvcreate "$VG" --size +12G --name swap
 lvcreate "$VG" --extents 100%FREE --name extra
 
