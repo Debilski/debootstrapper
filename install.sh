@@ -154,6 +154,7 @@ systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-package
 systemd-nspawn -D "$TARGET" systemctl enable /root/init-system.service
 systemd-nspawn -D "$TARGET" -b
 rm "$SYSTEMD_START_FILE"
+systemd-nspawn -D "$TARGET" systemctl disable init-system.service
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
 
 sed -i -e s/main/"main contrib non-free"/g "$TARGET/etc/apt/sources.list"
