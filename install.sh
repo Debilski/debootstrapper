@@ -33,6 +33,8 @@ which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn partprobe sgdisk > /dev/
 
 read -r -s -p "Please set the password for root: " PASSWD
 
+read -r -p "Add ssh key? " SSH_KEY
+
 HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
 
 echo "Assuming hostname is:"
@@ -156,6 +158,14 @@ systemd-nspawn -D "$TARGET" -b
 rm "$SYSTEMD_START_FILE"
 systemd-nspawn -D "$TARGET" systemctl disable init-system.service
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
+
+if [ -n "$SSH_KEY" ] ; then
+  mkdir -p "$TARGET"/root/.ssh
+  chmod 0700 "$TARGET"/root/.ssh
+  echo "$SSH_KEY" >> "$TARGET"/root/.ssh/authorized_keys
+  chmod 0600 "$TARGET"/root/.ssh/authorized_keys
+fi
+
 
 sed -i -e s/main/"main contrib non-free"/g "$TARGET/etc/apt/sources.list"
 if "$DEBIAN_BACKPORTS" ; then
