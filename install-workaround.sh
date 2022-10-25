@@ -221,10 +221,12 @@ EOF
 echo_green "Adding puppet to /etc/hosts"
 echo "172.30.0.21   puppet puppet.itb.pri" >> "$TARGET/etc/hosts"
 
-echo_green "˜˜˜ Installation finished. You can now reboot. ˜˜˜"
+echo_green "˜˜˜ Really forcing grub!!! ˜˜˜"
 
 mount "${BOOT_PARTITION}" "$T_BOOT"
 mount "${EFI_PARTITION}" "$T_EFI"
 grml-chroot "$TARGET" grub-install --recheck "$DISK"
 grml-chroot "$TARGET" update-grub
+
+echo_green "˜˜˜ Installation finished. You can now reboot. ˜˜˜"
 
