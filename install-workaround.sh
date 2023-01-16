@@ -216,6 +216,7 @@ echo_green "Activating production environment in Puppet."
 cat >>"$TARGET/etc/puppetlabs/puppet/puppet.conf" <<EOF
 [main]
 environment=production
+certificate_revocation=leaf
 EOF
 
 echo_green "Adding puppet to /etc/hosts"
