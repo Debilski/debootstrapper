@@ -26,10 +26,51 @@ DEBIAN_BACKPORTS=""
 GRUB=grub-efi-amd64 # grub-pc
 
 
-function echo_blue() { echo -e "\e[34m$*\033[0m"; }
+function echo_red() { echo -e "\e[31m$*\033[0m"; }
 function echo_green() { echo -e "\e[32m$*\033[0m"; }
+function echo_orange() { echo -e "\e[33m$*\033[0m"; }
+function echo_blue() { echo -e "\e[34m$*\033[0m"; }
+function echo_purple() { echo -e "\e[35m$*\033[0m"; }
+function echo_cyan() { echo -e "\e[36m$*\033[0m"; }
 
 function enter_to_continue() { read -rp "Press Enter to continue … "; }
+
+die() {
+  local msg=$1
+  local code=${2-1} # default exit status 1
+  echo_red "$msg"
+  exit "$code"
+}
+
+parse_params() {
+  # default values of variables set from params
+  TARGET_DISK=''
+
+  while :; do
+    case "${1-}" in
+    -h | --help) usage ;;
+    -v | --verbose) set -x ;;
+    -t | --target-disk) # example named parameter
+      TARGET_DISK="${2-}"
+      shift
+      ;;
+    -?*) die "Unknown option: $1" ;;
+    *) break ;;
+    esac
+    shift
+  done
+
+  args=("$@")
+
+  # check required params and arguments
+  #  [[ -z "${param-}" ]] && die "Missing required parameter: param"
+  # [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments"
+
+  return 0
+}
+
+parse_params "$@"
+
 
 function check_tools() {
   # check for: debootstrap
@@ -61,11 +102,18 @@ function check_apt_cache() {
 check_tools
 check_apt_cache
 
+
+
 read -r -s -p "Please set the password for root: " PASSWD
 
 read -r -p "Add ssh key? " SSH_KEY
 
 HOSTNAME=$(basename "$(hostname -A)" ${DOMAIN})
+
+if [[ $HOSTNAME == grml ]] ; then
+  echo "Hostname is grml. This doesn’t seem right."
+  exit 1
+fi
 
 echo "Assuming hostname is:"
 echo_green "$HOSTNAME"
@@ -88,8 +136,13 @@ if vgs "$VG" ; then
    exit 1
 fi
 
-echo_blue "Choose disk to install to:"
-read -r -e DISK
+if [[ -z "${TARGET_DISK-}" ]] ; then
+  echo_blue "Choose disk to install to:"
+  read -r -e DISK
+else
+  echo_blue "Choosing disk from command line: $TARGET_DISK"
+  DISK=$TARGET_DISK
+fi
 
 echo "Current partition layout on ${DISK} is:"
 sgdisk -p "$DISK"
