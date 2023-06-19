@@ -35,7 +35,7 @@ read -r -s -p "Please set the password for root: " PASSWD
 
 read -r -p "Add ssh key? " SSH_KEY
 
-HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
+HOSTNAME=${HOSTNAME:-$(basename $(hostname -A) ${DOMAIN})}
 
 echo "Assuming hostname is:"
 echo_green "$HOSTNAME"
