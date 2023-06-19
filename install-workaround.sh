@@ -308,7 +308,7 @@ certificate_revocation=leaf
 EOF
 
 echo_green "Adding puppet to /etc/hosts"
-echo "172.30.0.21   puppet puppet.itb.pri" >> "$TARGET/etc/hosts"
+echo "172.18.65.13   puppet puppet.itb.biologie.hu-berlin.de" >> "$TARGET/etc/hosts"
 
 echo_green "˜˜˜ Really forcing grub!!! ˜˜˜"
 

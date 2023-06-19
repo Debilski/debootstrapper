@@ -1,3 +1,3 @@
 TIMEZONE="Europe/Berlin"
-APT_CACHE="apt.itb.pri:3142"
-DOMAIN=".itb.pri"
+APT_CACHE="apt.itb.biologie.hu-berlin.de:3142"
+DOMAIN=".itb.biologie.hu-berlin.de"
