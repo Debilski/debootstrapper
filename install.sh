@@ -1,34 +1,107 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 set -euo pipefail
+trap cleanup SIGINT SIGTERM ERR EXIT
 
-source config
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
 
+cleanup() {
+  trap - SIGINT SIGTERM ERR EXIT
+  # script cleanup here
+}
 
-TARGET=${TARGET:-/target}
-T_BOOT="$TARGET/boot"
-T_EFI="$TARGET/boot/efi"
-T_EXTRA="$TARGET/extra"
+# shellcheck source=./config
+source "${script_dir}/config"
+
+function setup_targets() {
+  TARGET=${TARGET:-/target}
+  T_BOOT="$TARGET/boot"
+  T_EFI="$TARGET/boot/efi"
+  T_EXTRA="$TARGET/extra"
+}
+setup_targets
 
 DEBIAN_CODENAME=bullseye
 DEBIAN_BACKPORTS=""
 GRUB=grub-efi-amd64 # grub-pc
 
-function echo_blue() { echo -e "\e[34m$*\033[0m"; }
+
+function echo_red() { echo -e "\e[31m$*\033[0m"; }
 function echo_green() { echo -e "\e[32m$*\033[0m"; }
+function echo_orange() { echo -e "\e[33m$*\033[0m"; }
+function echo_blue() { echo -e "\e[34m$*\033[0m"; }
+function echo_purple() { echo -e "\e[35m$*\033[0m"; }
+function echo_cyan() { echo -e "\e[36m$*\033[0m"; }
 
-function enter_to_continue() { read -p "Press Enter to continue … "; }
+function enter_to_continue() { read -rp "Press Enter to continue … "; }
 
-# check for: debootstrap
-# dosfstools
-# xfsprogs
-# lvm
-# systemd-container
-# partprobe
-# sgdisk
-which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn partprobe sgdisk > /dev/null || {
-  echo_green "Some tools are missing. Installing …"
-  apt-get -y install debootstrap dosfstools xfsprogs lvm2 systemd-container gdisk parted
+die() {
+  local msg=$1
+  local code=${2-1} # default exit status 1
+  echo_red "$msg"
+  exit "$code"
 }
+
+parse_params() {
+  # default values of variables set from params
+  TARGET_DISK=''
+
+  while :; do
+    case "${1-}" in
+    -h | --help) usage ;;
+    -v | --verbose) set -x ;;
+    -t | --target-disk) # example named parameter
+      TARGET_DISK="${2-}"
+      shift
+      ;;
+    -?*) die "Unknown option: $1" ;;
+    *) break ;;
+    esac
+    shift
+  done
+
+  args=("$@")
+
+  # check required params and arguments
+  #  [[ -z "${param-}" ]] && die "Missing required parameter: param"
+  # [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments"
+
+  return 0
+}
+
+parse_params "$@"
+
+
+function check_tools() {
+  # check for: debootstrap
+  # dosfstools
+  # xfsprogs
+  # lvm
+  # systemd-container
+  # partprobe
+  # sgdisk
+  which debootstrap mkfs.vfat mkfs.xfs lvs systemd-nspawn partprobe sgdisk nc > /dev/null || {
+    echo_green "Some tools are missing. Installing …"
+    apt-get -y install debootstrap dosfstools xfsprogs lvm2 systemd-container gdisk parted
+  }
+}
+
+function check_apt_cache() {
+  # check that we can reach the apt cache server.
+  # otherwise ignore
+  IFS=":" read -ra SERVER_PORT <<< "$APT_CACHE"
+  if [[ ${#SERVER_PORT[@]} ]] && nc -z "${SERVER_PORT[@]}"; then
+    PROXY="${APT_CACHE}/"
+    echo "Using proxy server $APT_CACHE."
+  else
+    PROXY=""
+    echo "Cannot reach proxy server $APT_CACHE. Ignoring."
+  fi
+}
+
+check_tools
+check_apt_cache
+
 
 
 read -r -s -p "Please set the password for root: " PASSWD
@@ -36,6 +109,11 @@ read -r -s -p "Please set the password for root: " PASSWD
 read -r -p "Add ssh key? " SSH_KEY
 
 HOSTNAME=${HOSTNAME:-$(basename $(hostname -A) ${DOMAIN})}
+
+if [[ $HOSTNAME == grml ]] ; then
+  echo "Hostname is grml. This doesn’t seem right."
+  exit 1
+fi
 
 echo "Assuming hostname is:"
 echo_green "$HOSTNAME"
@@ -58,8 +136,13 @@ if vgs "$VG" ; then
    exit 1
 fi
 
-echo_blue "Choose disk to install to:"
-read -r -e DISK
+if [[ -z "${TARGET_DISK-}" ]] ; then
+  echo_blue "Choose disk to install to:"
+  read -r -e DISK
+else
+  echo_blue "Choosing disk from command line: $TARGET_DISK"
+  DISK=$TARGET_DISK
+fi
 
 echo "Current partition layout on ${DISK} is:"
 sgdisk -p "$DISK"
@@ -105,7 +188,7 @@ mkdir -p /target/boot/efi
 mount "${EFI_PARTITION}" "$T_EFI"
 mkdir -p /target/extra
 
-debootstrap --arch amd64 $DEBIAN_CODENAME "$TARGET" "http://${APT_CACHE}ftp.de.debian.org/debian"
+debootstrap --arch amd64 $DEBIAN_CODENAME "$TARGET" "http://${PROXY}ftp.de.debian.org/debian"
 chroot "$TARGET" apt purge -y rsyslog
 echo "root:${PASSWD}" | chroot "$TARGET" chpasswd
 
@@ -190,14 +273,19 @@ fi
 
 sed -i -e s/main/"main contrib non-free"/g "$TARGET/etc/apt/sources.list"
 if "$DEBIAN_BACKPORTS" ; then
-  echo "deb http://${APT_CACHE}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib non-free" >> "$TARGET/etc/apt/sources.list"
+  echo "deb http://${PROXY}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib non-free" >> "$TARGET/etc/apt/sources.list"
 fi
 bash mkfstab.sh "$DISK" "$VG" > "$TARGET/etc/fstab"
 
-CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
-for m in $CHROOT_MOUNTS ; do
-  mount --bind "/$m" "$TARGET/$m"
-done
+function chroot_mounts() {
+  setup_targets
+
+  CHROOT_MOUNTS="dev dev/pts proc sys sys/firmware"
+  for m in $CHROOT_MOUNTS ; do
+    mount --bind "/$m" "$TARGET/$m"
+  done
+}
+chroot_mounts
 
 chroot "$TARGET" update-locale
 chroot "$TARGET" apt-get update

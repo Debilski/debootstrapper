@@ -108,7 +108,7 @@ read -r -s -p "Please set the password for root: " PASSWD
 
 read -r -p "Add ssh key? " SSH_KEY
 
-HOSTNAME=$(basename $(hostname -A) ${DOMAIN})
+HOSTNAME=${HOSTNAME:-$(basename $(hostname -A) ${DOMAIN})}
 
 if [[ $HOSTNAME == grml ]] ; then
   echo "Hostname is grml. This doesn’t seem right."
