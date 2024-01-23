@@ -226,31 +226,40 @@ SYSTEMD_NETWORKD_FILE="$TARGET/etc/systemd/network/ethernet.network"
 cat >"$SYSTEMD_NETWORKD_FILE" <<EOF
 [Match]
 Name=e*
-Type=!vlan
-
-[Network]
-VLAN=huvlan
-EOF
-
-cat >"$TARGET/etc/systemd/network/huvlan.netdev" <<EOF
-[NetDev]
-Name=huvlan
-Kind=vlan
-
-[VLAN]
-Id=71
-EOF
-
-cat >"$TARGET/etc/systemd/network/huvlan.network" <<EOF
-[Match]
-Name=huvlan
 
 [Network]
 DHCP=yes
-
-[DHCPv4]
-UseDomains = true
 EOF
+
+#SYSTEMD_NETWORKD_FILE="$TARGET/etc/systemd/network/ethernet.network"
+#cat >"$SYSTEMD_NETWORKD_FILE" <<EOF
+#[Match]
+#Name=e*
+#Type=!vlan
+#
+#[Network]
+#VLAN=huvlan
+#EOF
+#
+#cat >"$TARGET/etc/systemd/network/huvlan.netdev" <<EOF
+#[NetDev]
+#Name=huvlan
+#Kind=vlan
+#
+#[VLAN]
+#Id=71
+#EOF
+#
+#cat >"$TARGET/etc/systemd/network/huvlan.network" <<EOF
+#[Match]
+#Name=huvlan
+#
+#[Network]
+#DHCP=yes
+#
+#[DHCPv4]
+#UseDomains = true
+#EOF
 
 systemctl restart dbus
 
