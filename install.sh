@@ -259,9 +259,10 @@ systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-package
 #systemd-nspawn -D "$TARGET" aptitude install -y '~pstandard' '~prequired' '~pimportant' # tasksel standard
 systemd-nspawn -D "$TARGET" systemctl enable init-system.service
 systemd-nspawn -D "$TARGET" -b
-rm "$SYSTEMD_START_FILE"
 systemd-nspawn -D "$TARGET" systemctl disable init-system.service
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
+
+rm "$SYSTEMD_START_FILE"
 
 if [ -n "$SSH_KEY" ] ; then
   mkdir -p "$TARGET"/root/.ssh
