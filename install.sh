@@ -260,8 +260,6 @@ systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-package
 systemd-nspawn -D "$TARGET" systemctl enable init-system.service
 systemd-nspawn -D "$TARGET" -b
 systemd-nspawn -D "$TARGET" systemctl disable init-system.service
-systemd-nspawn -D "$TARGET" apt-get install -y systemd-resolved
-systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
 
 rm "$SYSTEMD_START_FILE"
 
@@ -275,7 +273,7 @@ fi
 
 sed -i -e s/main/"main contrib non-free"/g "$TARGET/etc/apt/sources.list"
 if "$DEBIAN_BACKPORTS" ; then
-  echo "deb http://${PROXY}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib non-free" >> "$TARGET/etc/apt/sources.list"
+  echo "deb http://${PROXY}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib firmware-non-free non-free" >> "$TARGET/etc/apt/sources.list"
 fi
 bash mkfstab.sh "$DISK" "$VG" > "$TARGET/etc/fstab"
 
@@ -321,6 +319,9 @@ systemd-nspawn -D "$TARGET" apt-get update
 systemd-nspawn -D "$TARGET" apt-get -y install lsb-release puppet-agent
 systemd-nspawn -D "$TARGET" systemctl enable puppet
 systemd-nspawn -D "$TARGET" apt-get -y remove puppet-release
+
+systemd-nspawn -D "$TARGET" apt-get install -y systemd-resolved
+systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
 
 
 echo_green "Activating production environment in Puppet."
