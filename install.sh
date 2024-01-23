@@ -260,6 +260,7 @@ systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-package
 systemd-nspawn -D "$TARGET" systemctl enable init-system.service
 systemd-nspawn -D "$TARGET" -b
 systemd-nspawn -D "$TARGET" systemctl disable init-system.service
+systemd-nspawn -D "$TARGET" apt-get install -y systemd-resolved
 systemd-nspawn -D "$TARGET" systemctl enable systemd-networkd systemd-resolved
 
 rm "$SYSTEMD_START_FILE"
