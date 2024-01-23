@@ -21,7 +21,7 @@ function setup_targets() {
 }
 setup_targets
 
-DEBIAN_CODENAME=bullseye
+DEBIAN_CODENAME=bookworm
 DEBIAN_BACKPORTS=""
 GRUB=grub-efi-amd64 # grub-pc
 
@@ -169,7 +169,7 @@ enter_to_continue
 
 
 vgcreate "$VG" "${LVM_PARTITION}"
-lvcreate "$VG" --size +90G --name root
+lvcreate "$VG" --size +100G --name root
 lvcreate "$VG" --size +12G --name swap
 lvcreate "$VG" --extents 100%FREE --name extra
 
@@ -206,7 +206,7 @@ HOSTNAME=${HOSTNAME}
 TIMEZONE=${TIMEZONE}
 EOF
 
-SYSTEMD_START_FILE="$TARGET/root/init-system.service"
+SYSTEMD_START_FILE="$TARGET/etc/systemd/system/init-system.service"
 cat >"$SYSTEMD_START_FILE" <<EOF
 [Unit]
 Description=Set up hostname and timezone and shut down
@@ -257,7 +257,7 @@ systemctl restart dbus
 systemd-nspawn -D "$TARGET" apt-get install -y dbus openssh-server aptitude bash-completion apt-transport-https
 systemd-nspawn -D "$TARGET" bash -c 'apt-get install -y $(tasksel --task-packages standard)'
 #systemd-nspawn -D "$TARGET" aptitude install -y '~pstandard' '~prequired' '~pimportant' # tasksel standard
-systemd-nspawn -D "$TARGET" systemctl enable /root/init-system.service
+systemd-nspawn -D "$TARGET" systemctl enable init-system.service
 systemd-nspawn -D "$TARGET" -b
 rm "$SYSTEMD_START_FILE"
 systemd-nspawn -D "$TARGET" systemctl disable init-system.service
