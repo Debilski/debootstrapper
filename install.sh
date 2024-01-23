@@ -229,6 +229,9 @@ Name=e*
 
 [Network]
 DHCP=yes
+
+[DHCPv4]
+UseDomains=true
 EOF
 
 #SYSTEMD_NETWORKD_FILE="$TARGET/etc/systemd/network/ethernet.network"
