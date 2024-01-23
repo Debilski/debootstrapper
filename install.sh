@@ -271,13 +271,9 @@ if [ -n "$SSH_KEY" ] ; then
 fi
 
 
-sed -i -e s/main/"main contrib firmware-non-free"/g "$TARGET/etc/apt/sources.list"
-
-echo "deb http://${PROXY}ftp.de.debian.org.debian.org/debian ${DEBIAN_CODENAME}-updates contrib main non-free-firmware" >> "$TARGET/etc/apt/sources.list"
-echo "deb http://${PROXY}ftp.de.debian.org.debian.org/debian-security ${DEBIAN_CODENAME}-security contrib main non-free-firmware" >> "$TARGET/etc/apt/sources.list"
-
+sed -i -e s/main/"main contrib non-free-firmware"/g "$TARGET/etc/apt/sources.list"
 if "$DEBIAN_BACKPORTS" ; then
-  echo "deb http://${PROXY}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib firmware-non-free" >> "$TARGET/etc/apt/sources.list"
+  echo "deb http://${PROXY}ftp.de.debian.org/debian ${DEBIAN_CODENAME}-backports main contrib non-free-firmware" >> "$TARGET/etc/apt/sources.list"
 fi
 bash mkfstab.sh "$DISK" "$VG" > "$TARGET/etc/fstab"
 
